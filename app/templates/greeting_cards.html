@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Открытки</h1>
+    {% if greeting_cards %}
+        <div class="carousel-container">
+            <div class="carousel">
+                {% for greeting_card in greeting_cards %}
+                    <div class="carousel-item" data-index="{{ greeting_card.id }}">
+                        <input type="checkbox" class="card-checkbox" id="{{ greeting_card.id }}">
+                        <label for="{{ greeting_card.id }}">
+                            <img src="{{ url_for('static', filename='uploads/' + greeting_card.filename) }}"/>
+                        </label>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <input type="button" id="start-carousel" value="Старт">
+    {% else %}
+        <li>Нет открыток</li>
+    {% endif %}
+    <script src="{{ url_for('static', filename='js/carousel.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="greeting_card">
+        <span id="error"></span>
+        <input type="file" id="image-upload" accept=".jpeg,.jpg,.png">
+
+        <label for="aspect-ratio">Соотношение сторон</label>
+        <select id="aspect-ratio">
+            <option value="original">Исходное</option>
+            <option value="16:9">16:9</option>
+            <option value="1:1">1:1</option>
+        </select>
+
+        <canvas id="canvas"></canvas>
+
+        <label for="font-family">Шрифт</label>
+        <select id="font-family">
+            <option value="Courier New">Courier New</option>
+            <option value="Arial">Arial</option>
+            <option value="Times New Roman">Times New Roman</option>
+        </select>
+
+        <label for="font-color">Цвет текста</label>
+        <input type="color" id="font-color" value="#000000">
+
+        <label for="text-align">Выравнивание</label>
+        <select id="text-align">
+            <option value="left">Лево</option>
+            <option value="center">Центр</option>
+            <option value="right">Право</option>
+        </select>
+
+        <label for="custom-text">Текст</label>
+        <textarea id="custom-text" rows="5" placeholder="Введите ваш текст"></textarea>
+
+        <button id="add-text" disabled>Добавить/Изменить текст</button>
+    </div>
+
+    <button id="save" disabled>Сохранить</button>
+
+    <script src="{{ url_for('static', filename='js/canvas-to-blob.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/fabric.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/createGreetingCard.js') }}"></script>
+    <script>
+    let lines = 1;
+
+    function getKeyNum(e) {
+        let keynum;
+        if (window.event) {
+            keynum = e.keyCode;
+        } else if (e.which) {
+            keynum = e.which;
+        }
+
+        return keynum;
+    }
+
+    let limitLines = function (e) {
+        let keynum = getKeyNum(e);
+
+        if (keynum === 13) {
+            if (lines >= this.rows) {
+                e.stopPropagation();
+                e.preventDefault();
+            } else {
+                lines++;
+            }
+        }
+    };
+
+    let setNumberOfLines = function (e) {
+        lines = getNumberOfLines(this.value);
+    };
+
+    let limitPaste = function (e) {
+        let clipboardData, pastedData;
+
+        e.stopPropagation();
+        e.preventDefault();
+
+        clipboardData = e.clipboardData || window.clipboardData;
+        pastedData = clipboardData.getData('Text');
+
+        let pastedLines = getNumberOfLines(pastedData);
+
+        if (pastedLines <= this.rows) {
+            lines = pastedLines;
+            this.value = pastedData;
+        }
+        else if (pastedLines > this.rows) {
+            this.value = pastedData
+                .split(/\r\n|\r|\n/)
+                .slice(0, this.rows)
+                .join("\n ");
+        }
+    };
+
+    function getNumberOfLines(str) {
+        if (str) {
+            return str.split(/\r\n|\r|\n/).length;
+        }
+
+        return 1;
+    }
+
+    let textarea = document.getElementById('custom-text');
+    
+    textarea.addEventListener('keydown', limitLines);
+    textarea.addEventListener('keyup', setNumberOfLines);
+    textarea.addEventListener('cut', setNumberOfLines);
+    textarea.addEventListener('paste', limitPaste);
+    </script>
+{% endblock %}
